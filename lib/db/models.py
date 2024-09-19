@@ -6,45 +6,75 @@ from sqlalchemy import Sequence
 
 Base = declarative_base()
 
-class Player(Base):
-    __tablename__ = 'players'
-    
-    id = Column(Integer, Sequence('player_id_seq'), primary_key=True)
-    name = Column(String, nullable=False)
-    age = Column(Integer)
-    team_id = Column(Integer, ForeignKey('teams.id'))
-    
-    team = relationship("Team", back_populates="players")
-    
-    def __repr__(self):
-        return f"<Player(id={self.id}, name='{self.name}', age={self.age})>"
-
 class Team(Base):
     __tablename__ = 'teams'
     
-    id = Column(Integer, Sequence('team_id_seq'), primary_key=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
-    city = Column(String)
-    
-    players = relationship("Player", order_by=Player.id, back_populates="team")
-    
-    def __repr__(self):
-        return f"<Team(id={self.id}, name='{self.name}', city='{self.city}')>"
 
-class Game(Base):
-    __tablename__ = 'games'
+    players = relationship("Player", back_populates="team")
+
+    @classmethod
+    def create(cls, session, name):
+        if not name:
+            raise ValueError("Team name cannot be empty.")
+        team = cls(name=name)
+        session.add(team)
+        session.commit()
+        return team
+
+    @classmethod
+    def delete(cls, session, team_id):
+        team = session.query(cls).filter_by(id=team_id).first()
+        if team:
+            session.delete(team)
+            session.commit()
+            return team
+        return None
+
+    @classmethod
+    def get_all(cls, session):
+        return session.query(cls).all()
+
+    @classmethod
+    def find_by_id(cls, session, team_id):
+        return session.query(cls).filter_by(id=team_id).first()
+
+
+class Player(Base):
+    __tablename__ = 'players'
     
-    id = Column(Integer, Sequence('game_id_seq'), primary_key=True)
-    date = Column(DateTime, nullable=False)
-    home_team_id = Column(Integer, ForeignKey('teams.id'))
-    away_team_id = Column(Integer, ForeignKey('teams.id'))
-    home_team_score = Column(Integer, nullable=True)
-    away_team_score = Column(Integer, nullable=True)
-    
-    home_team = relationship("Team", foreign_keys=[home_team_id])
-    away_team = relationship("Team", foreign_keys=[away_team_id])
-    
-    def __repr__(self):
-        return (f"<Game(id={self.id}, date='{self.date}', "
-                f"home_team_id={self.home_team_id}, away_team_id={self.away_team_id}, "
-                f"home_team_score={self.home_team_score}, away_team_score={self.away_team_score})>")
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    age = Column(Integer, nullable=False)
+    team_id = Column(Integer, ForeignKey('teams.id'))
+
+    team = relationship("Team", back_populates="players")
+
+    @classmethod
+    def create(cls, session, name, age, team=None):
+        if not name:
+            raise ValueError("Player name cannot be empty.")
+        if age < 0:
+            raise ValueError("Age cannot be negative.")
+        player = cls(name=name, age=age, team=team)
+        session.add(player)
+        session.commit()
+        return player
+
+    @classmethod
+    def delete(cls, session, player_id):
+        player = session.query(cls).filter_by(id=player_id).first()
+        if player:
+            session.delete(player)
+            session.commit()
+            return player
+        return None
+
+    @classmethod
+    def get_all(cls, session):
+        return session.query(cls).all()
+
+    @classmethod
+    def find_by_id(cls, session, player_id):
+        return session.query(cls).filter_by(id=player_id).first()
