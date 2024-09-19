@@ -1,6 +1,7 @@
 import argparse
+from repository import add_player, add_team, delete_player, delete_team, list_players, list_teams
 from sqlalchemy.orm import sessionmaker
-from models import Base, Player, Team, Game
+from models import Base
 from sqlalchemy import create_engine
 
 DATABASE_URL = 'sqlite:///game_tracker.db'  # Adjust as needed
@@ -9,44 +10,49 @@ def create_db():
     engine = create_engine(DATABASE_URL)
     Base.metadata.create_all(engine)
 
-def add_player(name, age, team_name):
-    engine = create_engine(DATABASE_URL)
-    Session = sessionmaker(bind=engine)
-    session = Session()
-
-    team = session.query(Team).filter_by(name=team_name).first()
-    if not team:
-        print(f"Team '{team_name}' does not exist.")
-        return
-
-    player = Player(name=name, age=age, team=team)
-    session.add(player)
-    session.commit()
-    session.close()
-    print(f"Added player: {player}")
+def display_menu():
+    print("\nGame Tracker CLI")
+    print("1. Create Database")
+    print("2. Add Player")
+    print("3. Add Team")
+    print("4. Delete Player")
+    print("5. Delete Team")
+    print("6. List Players")
+    print("7. List Teams")
+    print("8. Exit")
 
 def main():
-    parser = argparse.ArgumentParser(description="Game Tracker CLI")
-    subparsers = parser.add_subparsers(dest='command')
+    create_db()  # Ensure the database is created at the start
+    while True:
+        display_menu()
+        choice = input("Select an option: ")
 
-    # Create DB command
-    subparsers.add_parser('create-db', help='Create the database')
-
-    # Add player command
-    add_player_parser = subparsers.add_parser('add-player', help='Add a new player')
-    add_player_parser.add_argument('name', type=str, help='Name of the player')
-    add_player_parser.add_argument('age', type=int, help='Age of the player')
-    add_player_parser.add_argument('team', type=str, help='Team name')
-
-    args = parser.parse_args()
-
-    if args.command == 'create-db':
-        create_db()
-        print("Database created.")
-    elif args.command == 'add-player':
-        add_player(args.name, args.age, args.team)
+        if choice == '1':
+            create_db()
+            print("Database created.")
+        elif choice == '2':
+            name = input("Enter player's name: ")
+            age = int(input("Enter player's age: "))
+            team_name = input("Enter team name: ")
+            add_player(name, age, team_name)
+        elif choice == '3':
+            name = input("Enter team name: ")
+            add_team(name)
+        elif choice == '4':
+            player_id = int(input("Enter player ID to delete: "))
+            delete_player(player_id)
+        elif choice == '5':
+            team_id = int(input("Enter team ID to delete: "))
+            delete_team(team_id)
+        elif choice == '6':
+            list_players()
+        elif choice == '7':
+            list_teams()
+        elif choice == '8':
+            print("Exiting the application.")
+            break
+        else:
+            print("Invalid option, please try again.")
 
 if __name__ == "__main__":
-    
     main()
-
