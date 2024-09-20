@@ -78,38 +78,3 @@ class Player(Base):
     @classmethod
     def find_by_id(cls, session, player_id):
         return session.query(cls).filter_by(id=player_id).first()
-class Game(Base):
-    __tablename__ = 'games'
-    
-    id = Column(Integer, primary_key=True)
-    date = Column(DateTime, default=datetime.utcnow)
-    location = Column(String, nullable=False)
-    team_id = Column(Integer, ForeignKey('teams.id'))
-
-    team = relationship("Team", back_populates="games")
-
-    @classmethod
-    def create(cls, session, location, team_id):
-        if not location:
-            raise ValueError("Game location cannot be empty.")
-        game = cls(location=location, team_id=team_id)
-        session.add(game)
-        session.commit()
-        return game
-
-    @classmethod
-    def delete(cls, session, game_id):
-        game = session.query(cls).filter_by(id=game_id).first()
-        if game:
-            session.delete(game)
-            session.commit()
-            return game
-        return None
-
-    @classmethod
-    def get_all(cls, session):
-        return session.query(cls).all()
-
-    @classmethod
-    def find_by_id(cls, session, game_id):
-        return session.query(cls).filter_by(id=game_id).first()
