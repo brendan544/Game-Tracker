@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import Player, Team, Game
 
-DATABASE_URL = 'sqlite:///game_tracker.db'  # Adjust as needed
+DATABASE_URL = 'sqlite:///game_tracker.db' 
 
 def setup_logging():
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')

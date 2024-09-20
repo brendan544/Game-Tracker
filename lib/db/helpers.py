@@ -2,7 +2,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from models import Player, Team
 
-DATABASE_URL = 'sqlite:///game_tracker.db'  # Adjust as needed
+DATABASE_URL = 'sqlite:///game_tracker.db'  
 
 def get_session():
     engine = create_engine(DATABASE_URL)
